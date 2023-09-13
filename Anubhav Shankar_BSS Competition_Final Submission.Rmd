@@ -24,7 +24,7 @@ library("merTools")
 
 
 ```{r Set Working Directory, include=FALSE}
-setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS Competition") # Absolute Path
+setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition") # Absolute Path
 getwd()
 ```
 <br>

@@ -16,7 +16,7 @@ library("ggfortify") # For Visualization
 library("lme4") # For building Hierarchical/Mixed-Effect Models
 library("merTools")
 
-setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS Competition")
+setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition")
 getwd()
 
 
