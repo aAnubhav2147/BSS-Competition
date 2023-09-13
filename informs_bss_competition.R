@@ -19,6 +19,8 @@ library("merTools")
 setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition")
 getwd()
 
+# url <- "https://raw.githubusercontent.com/aAnubhav2147/BSS-Competition/main/Archive/Archived%20Datasets/competition_training_data_09112023.csv"
+# bss <- read.csv(url(url),header = TRUE)
 
 bss <- read.csv("competition_training_data.csv") # Ingest the data set
 
