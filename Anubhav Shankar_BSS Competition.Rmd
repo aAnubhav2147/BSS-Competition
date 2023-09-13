@@ -1,0 +1,177 @@
+---
+title: "BSS Competition"
+author: "Anubhav Shankar"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r Load the requisite packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE) # A global setting to include outputs and suppress the warnings
+
+library("tidyverse") # for tidy data 
+library("mice") # for imputation purposes
+library("naniar") # for determining the nature of the missing data
+library("lubridate") # for working with date/time-stamp records
+library("tseries") # for working with time-series data
+library("forecast") # for working with time-series data
+library("ggplot2") # for visualization
+library("zoo") # for interpolation
+```
+
+
+```{r Set Working Directory, include=FALSE}
+setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS Competition") # Absolute Path
+getwd()
+```
+<br>
+```{r Data Ingestion, include=TRUE}
+bss <- read.csv("2023 INFORMS BSS Data Challenge Dataset.csv") # Ingest the data set
+
+# Visualize the metadata
+str(bss) 
+glimpse(bss)
+
+head(bss) # Get a pivot of the first few rows
+summary(bss) # Get a basic data summary
+```
+<br>
+Let's generate a pivot of NA values present in each column
+<br>
+```{r Check NAs, include=TRUE}
+is_na_count <- bss %>% summarize_all(funs(sum(is.na(.)))) # Check the NA's in each field
+print(is_na_count)
+```
+<br>
+Let's attempt to ascertain the nature of the missing values
+<br>
+```{r Nature of missing values, include=TRUE, echo=TRUE}
+
+gg_miss_upset(bss) # Upset plot
+gg_miss_var(bss)
+
+```
+
+<br>
+We see that all the 'comp_x_price' columns have a lot of missing values. Ascertaining the nature of missing values will help in determining a suitable imputation method.
+<br>
+<br>
+Let's create some copies of the original dataset for further exploration & experimentation.
+<br>
+```{r Create copies of the dataframe, include=TRUE}
+
+# bss_bkp <- bss
+bss_refresh <- bss # will have simple median imputation 
+bss_train <- bss # will have interpolated imputation
+
+```
+<br>
+```{r Preliminary Setup, include=TRUE}
+
+blank_count <- bss_refresh %>% summarize_all(funs(sum(is.na(.)))) # Check the NA's in each field
+print(blank_count) # Just an added check, the counts here should match with the counts of the 'is_na_count' object
+
+bss_refresh$salesdate <- as.Date(bss_refresh$salesdate,"%Y-%m-%d") # Coerce the 'salesdate' into Date type
+
+glimpse(bss_refresh)
+```
+<br>
+```{r Preliminary EDA, include=TRUE}
+# Create a histogram to see the spread of the 'profit' field
+ggplot(bss_refresh, aes(x = profit)) + 
+  geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + 
+  theme_minimal() + 
+  labs(title = "Distribution of Profit", x = "Profit", y = "Count")
+
+# Create a boxplot to see the outliers in the 'profit' field
+ggplot(bss_refresh, aes(y = profit)) + 
+  geom_boxplot(fill = "lightblue", color = "black") + 
+  theme_minimal() + 
+  labs(title = "Boxplot of Profit", y = "Profit")
+```
+<br>
+Ok. These graphs weren't very helpful. Maybe we'll need to to check the distribution of the 'comp_x_price' variables.
+<br>
+We'll come back to it later.
+<br>
+
+Before we get into the **Time-Series Analysis**, let's check whether the nature of the seasonality is additive or multiplicative.
+<br>
+```{r Check the data seasonality, include=TRUE}
+
+bss_temp <- bss_refresh %>% select(salesdate,sales) # Create a temporary subset
+bss_ts <- ts(bss_temp$sales,frequency = 365) # Capture the yearly seasonality
+
+fit <- stl(bss_ts,s.window = "period")
+plot(fit)
+additive_fit <- decompose(bss_ts,type = "additive")
+multiplicative_fit <- decompose(bss_ts,type = "multiplicative")
+plot(bss_ts,ylab = "Sales")
+
+```
+<br>
+After checking the 'trend' plot, we can confidently say that the seasonality of the plot is additive.
+<br>
+```{r Basic Time-Series EDA, include=TRUE}
+
+# Do a basic time-series EDA of the sales over the entire period
+
+# Visualize the inherent seasonality 
+plot(bss_ts)
+plot.ts(bss_ts)
+
+# Check stationarity
+adf.test(diff(bss_ts)) 
+acf(bss_ts)
+# diff(bss_ts)
+plot(diff(bss_ts)) # Plot the data after rendering it stationary
+
+```
+<br>
+After looking at the results of the **Augmented Dickey-Fuller Test** and the **Auto-Correlation Factor** plot, we can confidently say that the data is **stationary**.
+<br>
+<br>
+As the '**comp_x_price**' columns have multiple NA's we'll impute median values to
+replace the NA's. Median is better suited for it's lack of volatility and takes into account the inherent skewness in the 'comp_X_price' fields.
+<br>
+```{r Median Imputation, include=TRUE}
+
+# Create a function to aid the imputation in multiple columns
+median_impute <- function(column) {
+if (is.numeric(column)) {
+return(ifelse(is.na(column), median(column, na.rm = TRUE), column))
+} else {
+return(column)  # return as-is for non-numeric columns
+}
+}
+
+# A vector of column names that need to be imputed
+cols_to_impute <- c("comp_1_price", "comp_2_price", "comp_3_price", "comp_4_price", "comp_5_price", "comp_data_min_price","comp_data_max_price","managed_fba_stock_level")
+
+# Use vapply() to execute the created function on the requisite columns
+bss_refresh[cols_to_impute] <- vapply(bss_refresh[cols_to_impute],median_impute, FUN.VALUE = numeric(nrow(bss_refresh)))
+
+# Check to see the successful implementation
+blank_count <- bss_refresh %>% summarize_all(funs(sum(is.na(.))))
+print(blank_count)
+
+```
+<br>
+```{r Impute using Interpolation, include=TRUE}
+
+na_count_train <- bss_train %>% summarize_all(funs(sum(is.na(.)))) # Check the NA's in each field
+na_count_train
+
+interpolate_impute <- function(col_name){
+if(is.numeric(col_name)){
+return(ifelse(is.na(col_name), na.approx(col_name), col_name))
+}
+else{
+return(col_name)
+}
+}
+
+bss_train[cols_to_impute]<-vapply(bss_train[cols_to_impute],interpolate_impute,FUN.VALUE = numeric(nrow(bss_train)))
+
+na_count_train <- bss_train %>% summarize_all(funs(sum(is.na(.)))) # Check the NA's in each field
+print(na_count_train)
+```
