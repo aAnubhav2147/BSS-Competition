@@ -16,13 +16,12 @@ library("ggfortify") # For Visualization
 library("lme4") # For building Hierarchical/Mixed-Effect Models
 library("merTools")
 
-setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition")
-getwd()
 
-# url <- "https://raw.githubusercontent.com/aAnubhav2147/BSS-Competition/main/Archive/Archived%20Datasets/competition_training_data_09112023.csv"
-# bss <- read.csv(url(url),header = TRUE)
 
-bss <- read.csv("competition_training_data.csv") # Ingest the data set
+url <- "https://raw.githubusercontent.com/aAnubhav2147/BSS-Competition/main/Archive/Archived%20Datasets/competition_training_data_09112023.csv"
+
+bss <- read.csv(url(url),header = TRUE)
+
 
 # Create a backup of the data frame
 bss_bkp <- bss
@@ -207,7 +206,7 @@ ggplot(product_totals,aes(x=product_name, y=volume)) +
 
 
 
-bss_pivot <- bss %>% filter(salesdate >= "2022-01-01" & salesdate <= "2022-07-13") %>% dplyr::select(sku, price, volume, prod_cat) %>% distinct()
+bss_pivot <- bss %>% filter(salesdate >= "2022-01-01" & salesdate <= "2022-07-13") %>% dplyr::select(sku, price, volume, revenue, prod_cat) %>% distinct()
 
 # product_name <- c("File Folders SKU 47","File Folders SKU 20")
 product_name <- c("File Folders SKU 47")
@@ -221,18 +220,6 @@ bss_pivot %>% filter(sku %in% product_name) %>%
        color = "Product") +
   theme_minimal()
 
-product_category <- c("File Folders", "Classification Folders")
-bss_pivot %>% filter(prod_cat %in% product_category) %>%
-  ggplot(aes(x = price, y = volume, color = prod_cat)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Price vs Volume for File Folders",
-       x = "Price",
-       y = "Volume",
-       color = "Product") +
-  theme_minimal()
-
-bss_pivot <- bss %>% filter(salesdate >= "2022-01-01" & salesdate <= "2022-07-13") %>% dplyr::select(sku, price, revenue, prod_cat) %>% distinct()
 product_name <- c("File Folders SKU 47")
 bss_pivot %>% filter(sku %in% product_name) %>%
 ggplot(aes(x = price, y = revenue, color = sku)) +
@@ -243,6 +230,18 @@ x = "Price",
 y = "Revenue",
 color = "Product") +
 theme_minimal()
+
+# product_category <- c("File Folders", "Classification Folders")
+product_category <- c("File Folders")
+bss_pivot %>% filter(prod_cat %in% product_category) %>%
+  ggplot(aes(x = price, y = volume, color = prod_cat)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(title = "Price vs Volume for Folders",
+       x = "Price",
+       y = "Volume",
+       color = "Product") +
+  theme_minimal()
 
 
 # Filter for data in 2022
@@ -277,21 +276,21 @@ monthly_sales_ts <- ts(monthly_sales$Total_Sales_m, start = c(2022,1), frequency
 autoplot(monthly_sales_ts) + labs(y ="Volume Sold", title = "Monthly Sales for 2022")
 
 
-# Scale all the price columns with the competitor & market thresholds
-bss <- bss %>%
-  mutate(
-    across(all_of(price_cols),
-           ~ ifelse(is.infinite(round((. - min_price) / (max_price - min_price),2)),
-                    NA,
-                    round((. - min_price) / (max_price - min_price),2)),
-           .names = "{.col}_scaled_m"),
-    
-    across(all_of(price_cols),
-           ~ ifelse(is.infinite(round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
-                    NA,
-                    round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
-           .names = "{.col}_scaled_c")
-  )
+# # Scale all the price columns with the competitor & market thresholds
+# bss <- bss %>%
+#   mutate(
+#     across(all_of(price_cols),
+#            ~ ifelse(is.infinite(round((. - min_price) / (max_price - min_price),2)),
+#                     NA,
+#                     round((. - min_price) / (max_price - min_price),2)),
+#            .names = "{.col}_scaled_m"),
+#     
+#     across(all_of(price_cols),
+#            ~ ifelse(is.infinite(round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
+#                     NA,
+#                     round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
+#            .names = "{.col}_scaled_c")
+#   )
 
 
 glimpse(bss)
@@ -301,7 +300,7 @@ glimpse(bss)
 
 
 seed <- 123
-set.seed(seed = seed) # Set seed for reproducability
+set.seed(seed = seed) # Set seed for reproducibility
 
 # Function to calculate the Mean Absolute Percentage Error
 
@@ -339,9 +338,19 @@ round_to_constraint <- function(x){
     return(integer_part + 0.09)
   }
   
+  # else if(decimal_part == 0.05 || decimal_part == 0.09){
+  #   return(integer_part)
+  # }
+  
+  # else {
+  #   return(integer_part)
+  # }
+  
   else{
-    return(integer_part + 0.05 + 1)
+    return(integer_part + 0.05 + 1) # Best way to constraint for the decimal part > 0.09
+    # Basically, we're rounding it off to the next dollar for a nickel increment
   }
+  
 }
 
 
@@ -378,6 +387,7 @@ predicted_volume <- predict(model, newdata = transform(df, price = price))
 profit <- price * predicted_volume - df$cost
 return(-sum(profit, na.rm = TRUE))
 }
+
 result <- optim(
 par = initial_guess,
 fn = profit_function,
@@ -391,7 +401,7 @@ upper = upper_limit
 
 
 t <- result$par
-
+t
 
 
 
@@ -407,7 +417,7 @@ warning("Data frame has two or fewer rows. Cannot remove last two rows.")
 
 temp$salesdate <- seq(from = as.Date("2023-09-10"), to = as.Date("2023-09-18"), by = "day")
 temp$weekday <- wday(temp$salesdate, label = TRUE) # Introduce a weekday instrumental variable
-temp$price <- t
+temp$price <- round_to_constraint(t)
 temp$pred_vol <- round(predict(bss_hierachical_price_product_intercept, newdata = temp, re.form = NA),0)
 temp$pred_profit <- (temp$price * temp$pred_vol) - temp$cost
 p <- mape(temp$profit, temp$pred_profit)
@@ -535,11 +545,29 @@ pred_plot
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ##############################################################################################
 
 # library("zoo") # for interpolation
 # library("mice") # for imputation purposes
 # library("naniar") # for determining the nature of the missing data
+
+# setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition")
+# getwd()
+
+# bss <- read.csv("competition_training_data.csv") # Ingest the data set
 
 # change_to_dbl <- function(df){
 #   if(is.integer(df$column)){
