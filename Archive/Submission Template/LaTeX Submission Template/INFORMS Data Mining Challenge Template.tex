@@ -1,0 +1,107 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Author template for INFORMS 2023 BSS Data Challenge Competition
+%% -- based on Author template for Operations Research (informs3.cls)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[competition,nonblindrev]{informs3-competition} 
+
+\DoubleSpacedXI % Made default 4/4/2014 at request
+%%\OneAndAHalfSpacedXI % current default line spacing
+%%\OneAndAHalfSpacedXII
+%%\DoubleSpacedXII
+
+\usepackage{endnotes}
+\let\footnote=\endnote
+\let\enotesize=\normalsize
+\def\notesname{Endnotes}%
+\def\makeenmark{$^{\theenmark}$}
+\def\enoteformat{\rightskip0pt\leftskip0pt\parindent=1.75em
+  \leavevmode\llap{\theenmark.\enskip}}
+
+
+
+\TheoremsNumberedThrough     % Preferred (Theorem 1, Lemma 1, Theorem 2)
+%\TheoremsNumberedByChapter  % (Theorem 1.1, Lemma 1.1, Theorem 1.2)
+\ECRepeatTheorems
+
+%% Setup of the equation numbering system. Outcomment only one.
+%% Preferred default is the first option.
+\EquationsNumberedThrough    % Default: (1), (2), ...
+%\EquationsNumberedBySection % (1.1), (1.2), ...
+
+
+%%%%%%%%%%%%%%%%
+\begin{document}
+%%%%%%%%%%%%%%%%
+% Corresponding author's name for the running heads
+\RUNAUTHOR{CorrespondingAuthor}
+
+% Title or shortened title suitable for running heads. Sample:
+% \RUNTITLE{Bundling Information Goods of Decreasing Value}
+% Enter the (shortened) title:
+\RUNTITLE{Your Short Title}
+
+\TITLE{Appropriate Title of Your Submission}
+
+% Corresponding author or team lead. A single point of contact for each team submission is requested. 
+\ARTICLEAUTHORS{%
+\AUTHOR{Corresponding Author}
+\AFF{Address, Town, State, Zip code, Country, \EMAIL{CorrespondingAuthor@email.com}} %, \URL{}}
+} % end of the block
+
+\ABSTRACT{You should replace this sentence with your abstract that quickly summarizes your approach and findings.}
+
+
+
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+In the introduction, you should include an overview of the approach. Throughout the document include citations as appropriate. As an example, include citations of the form: (BSS, 2023) or BSS (2023). Included figures and tables should be labeled and captioned with a short description.
+
+
+\section{Methodology}
+
+Present the methodology of your approach. Charts, diagrams or other visualizations constructed from analyzing data may be useful to communicate your thoughts and possible approaches. Subsections are allowed. One piece of evidence can be any numerical results you have.
+
+
+\subsection{Results}
+One piece of evidence can be any numerical results you have that justify your methodology.
+
+\section{Conclusion}
+
+Provide a summary of key findings.
+
+\section{Team Members}
+
+List all team members associated with the submission, including the corresponding author. A team’s solution should be submitted once (as opposed to each member of the team submitting the same solution individually).
+
+\begin{itemize}
+\item Team Member 1 (a.k.a. Corresponding Author), Affiliation and address, TM1@email.com
+\item Team Member 2, Affiliation and address, TM2@email.com
+\item Team Member 3, Affiliation and address, TM3@email.com
+\end{itemize}
+
+
+
+
+% References here (outcomment the appropriate case)
+
+% CASE 1: BiBTeX used to constantly update the references
+%   (while the paper is being written).
+%\bibliographystyle{ormsv080} % outcomment this and next line in Case 1
+%\bibliography{<your bib file(s)>} % if more than one, comma separated
+
+% CASE 2: BiBTeX used to generate mypaper.bbl (to be further fine tuned)
+%\input{mypaper.bbl} % outcomment this line in Case 2
+
+%If you don't use BiBTex, you can manually itemize references as shown below.
+
+\begin{thebibliography}{}
+\bibitem[]{asi}
+BSS. 2023. Submission template example. \textit{Journal of XYZ}. 1(1).
+\end{thebibliography}
+
+%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%

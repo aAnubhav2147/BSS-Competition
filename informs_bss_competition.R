@@ -19,9 +19,13 @@ library("merTools")
 
 
 
-url <- ""
+# url <- ""
+# 
+# bss <- read_excel(url(url),header = TRUE)
 
-bss <- read_excel(url(url),header = TRUE)
+setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition/Latest Data")
+
+bss <- read_excel("competition_data_2023_18_09.xlsx")
 
 
 # Create a backup of the data frame
@@ -136,12 +140,7 @@ ggplot(bss, aes(x = price)) +
   theme_minimal() +
   labs(title = "Distribution of Price", x = "Price", y = "Density")
 
-# Create a histogram to see the spread of the 'cost' field
-ggplot(bss, aes(x = cost)) + 
-  # geom_histogram(aes(y = after_stat(density)),binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + 
-  geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + 
-  theme_minimal() + 
-  labs(title = "Distribution of Cost", x = "Cost", y = "Count")
+
 
 # Create a boxplot to see the outliers in the 'price' field
 ggplot(bss, aes(y = price)) + 
@@ -149,20 +148,14 @@ ggplot(bss, aes(y = price)) +
   theme_minimal() + 
   labs(title = "Boxplot of Price", y = "Price")
 
-# Attempt to visualize the sales function
-plot(bss$price,bss$volume)
-
-ggplot(bss, aes(x = price, y = volume)) +
-  geom_line() +
-  labs(title = "Sales Function", x = "Price", y = "Volume") +
-  theme_minimal()
-
 
 # Create a boxplot to see the outliers in the 'cost' field
 ggplot(bss, aes(y = cost)) + 
   geom_boxplot(fill = "lightblue", color = "black") + 
   theme_minimal() + 
   labs(title = "Boxplot of Cost", y = "Price")
+
+
 
 # Let's see the distribution of all the price variables 
 
@@ -277,21 +270,7 @@ monthly_sales_ts <- ts(monthly_sales$Total_Sales_m, start = c(2022,1), frequency
 autoplot(monthly_sales_ts) + labs(y ="Volume Sold", title = "Monthly Sales for 2022")
 
 
-# # Scale all the price columns with the competitor & market thresholds
-# bss <- bss %>%
-#   mutate(
-#     across(all_of(price_cols),
-#            ~ ifelse(is.infinite(round((. - min_price) / (max_price - min_price),2)),
-#                     NA,
-#                     round((. - min_price) / (max_price - min_price),2)),
-#            .names = "{.col}_scaled_m"),
-#     
-#     across(all_of(price_cols),
-#            ~ ifelse(is.infinite(round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
-#                     NA,
-#                     round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
-#            .names = "{.col}_scaled_c")
-#   )
+
 
 
 glimpse(bss)
@@ -406,7 +385,7 @@ t
 
 
 
-temp <- bss_val %>% filter(salesdate > "2023-08-29" & salesdate <= "2023-09-09")
+temp <- bss_val %>% filter(salesdate > "2023-08-31" & salesdate <= "2023-09-11")
 
 # Remove the last two rows 
 if (nrow(temp) > 2) {
@@ -421,6 +400,8 @@ temp$weekday <- wday(temp$salesdate, label = TRUE) # Introduce a weekday instrum
 temp$price <- round_to_constraint(t)
 temp$pred_vol <- round(predict(bss_hierachical_price_product_intercept, newdata = temp, re.form = NA),0)
 temp$pred_profit <- (temp$price * temp$pred_vol) - temp$cost
+v <- mape(temp$volume, temp$pred_vol)
+print(paste0("Volume MAPE: ", v, "%"))
 p <- mape(temp$profit, temp$pred_profit)
 print(paste0("Profit MAPE: ", p, "%"))
 
@@ -442,39 +423,39 @@ print(paste0("Profit MAPE: ", p, "%"))
 ############################## Linear Regression ################################################
 
 # Run a linear regression with volume as the response variable and the scaled prices as the features
-features <- grep("_scaled_m", colnames(bss_train), value = TRUE)
-formula <- paste("volume ~", paste(features, collapse = "+"))
-bss_lm <- lm(as.formula(formula),data = bss_train)
-summary(bss_lm)
-vif(bss_lm)
-coef(bss_lm)
-confint(bss_lm)
-residuals <- data.frame("Residuals" = bss_lm$residuals)
-res_hist <- ggplot(residuals, aes(x=Residuals)) + geom_histogram(color='black', fill='red') + ggtitle('Histogram of Residuals')
-res_hist
-par(mfrow = c(2,2))
-plot(bss_lm)
-glance(bss_lm)
-glance(bss_lm)
-bss_lm_mse <- mean(residuals(bss_lm) ^ 2)
-bss_lm_mse
-bss_lm_rmse <- sqrt(bss_lm_mse)
-bss_lm_rmse
-bss_lm_rss <- sum(residuals(bss_lm)^2)
-bss_lm_rse <- summary(bss_lm)$sigma
-bss_lm_rse
-fit <- predict(bss_lm,bss_val)
-summary(fit)
-fit_ssl <- sum((bss_val$volume - fit)^2)
-sprintf("SSL/SSR/SSE: %f", fit_ssl)
-fit_mse <- fit_ssl/nrow(bss_val)
-sprintf("MSE: %f", fit_mse)
-fit_rmse <- sqrt(fit_mse)
-sprintf("RMSE: %f", fit_mse)
-bss_val$pred_vol <- fit
-
-pred_plot <- bss_val %>% ggplot(aes(volume,pred_vol)) + geom_point(alpha = 0.75) + geom_smooth(method = "loess") + stat_smooth(aes(color = "Predicted Volume")) + xlab("Actual Volume") + ylab("Predicted Volume")
-pred_plot
+# features <- grep("_scaled_m", colnames(bss_train), value = TRUE)
+# formula <- paste("volume ~", paste(features, collapse = "+"))
+# bss_lm <- lm(as.formula(formula),data = bss_train)
+# summary(bss_lm)
+# vif(bss_lm)
+# coef(bss_lm)
+# confint(bss_lm)
+# residuals <- data.frame("Residuals" = bss_lm$residuals)
+# res_hist <- ggplot(residuals, aes(x=Residuals)) + geom_histogram(color='black', fill='red') + ggtitle('Histogram of Residuals')
+# res_hist
+# par(mfrow = c(2,2))
+# plot(bss_lm)
+# glance(bss_lm)
+# glance(bss_lm)
+# bss_lm_mse <- mean(residuals(bss_lm) ^ 2)
+# bss_lm_mse
+# bss_lm_rmse <- sqrt(bss_lm_mse)
+# bss_lm_rmse
+# bss_lm_rss <- sum(residuals(bss_lm)^2)
+# bss_lm_rse <- summary(bss_lm)$sigma
+# bss_lm_rse
+# fit <- predict(bss_lm,bss_val)
+# summary(fit)
+# fit_ssl <- sum((bss_val$volume - fit)^2)
+# sprintf("SSL/SSR/SSE: %f", fit_ssl)
+# fit_mse <- fit_ssl/nrow(bss_val)
+# sprintf("MSE: %f", fit_mse)
+# fit_rmse <- sqrt(fit_mse)
+# sprintf("RMSE: %f", fit_mse)
+# bss_val$pred_vol <- fit
+# 
+# pred_plot <- bss_val %>% ggplot(aes(volume,pred_vol)) + geom_point(alpha = 0.75) + geom_smooth(method = "loess") + stat_smooth(aes(color = "Predicted Volume")) + xlab("Actual Volume") + ylab("Predicted Volume")
+# pred_plot
 
 
 
@@ -606,6 +587,21 @@ pred_plot
 # bss_rc__train_missing <- bss_train %>% summarise(across(where(is.numeric), ~sum(is.na(.x)))) %>% t() %>% as.data.frame()
 # bss_rc_train_nomiss <- bss_train %>% summarise(across(where(is.numeric), ~sum(!is.na(.x)))) %>% t() %>% as.data.frame()
 
+# Create a histogram to see the spread of the 'cost' field
+# ggplot(bss, aes(x = cost)) + 
+#   # geom_histogram(aes(y = after_stat(density)),binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + 
+#   geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) + 
+#   theme_minimal() + 
+#   labs(title = "Distribution of Cost", x = "Cost", y = "Count")
+
+# Attempt to visualize the sales function
+# plot(bss$price,bss$volume)
+# 
+# ggplot(bss, aes(x = price, y = volume)) +
+#   geom_line() +
+#   labs(title = "Sales Function", x = "Price", y = "Volume") +
+#   theme_minimal()
+
 # n_distinct(bss_refresh$sku) # Check the number of distinct items
 # sum(is.na(bss_refresh$comp_1_price))
 # sum(is.na(bss_refresh$comp_2_price))
@@ -619,6 +615,22 @@ pred_plot
 
 # bss_temp$scaled_price_m <- round((bss_temp$price - bss_temp$min_price)/(bss_temp$max_price - bss_temp$min_price),2)
 # bss_temp$scaled_price_c <- round((bss_temp$price - bss_temp$comp_data_min_price)/(bss_temp$comp_data_max_price - bss_temp$comp_data_min_price),2)
+
+# # Scale all the price columns with the competitor & market thresholds
+# bss <- bss %>%
+#   mutate(
+#     across(all_of(price_cols),
+#            ~ ifelse(is.infinite(round((. - min_price) / (max_price - min_price),2)),
+#                     NA,
+#                     round((. - min_price) / (max_price - min_price),2)),
+#            .names = "{.col}_scaled_m"),
+#     
+#     across(all_of(price_cols),
+#            ~ ifelse(is.infinite(round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
+#                     NA,
+#                     round((. - comp_data_min_price) / (comp_data_max_price - comp_data_min_price),2)),
+#            .names = "{.col}_scaled_c")
+#   )
 
 # # Identify all the columns that contain price information, including 'price'
 # price_columns <- c("price", grep("_price$", colnames(bss), value = TRUE))
