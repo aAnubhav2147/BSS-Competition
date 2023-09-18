@@ -5,6 +5,7 @@ rm(list = ls()) # Clear the working environment
 
 # Import the requisite libraries
 options(show.message = FALSE) # Suppress package startup messages
+library("readxl") # To read Excel files
 library("tidyverse") # for tidy data 
 library("car") # for regression
 library("broom")
@@ -18,9 +19,9 @@ library("merTools")
 
 
 
-url <- "https://raw.githubusercontent.com/aAnubhav2147/BSS-Competition/main/Archive/Archived%20Datasets/competition_training_data_09112023.csv"
+url <- ""
 
-bss <- read.csv(url(url),header = TRUE)
+bss <- read_excel(url(url),header = TRUE)
 
 
 # Create a backup of the data frame
@@ -415,7 +416,7 @@ temp <- temp[-((nrow(temp) - 1):(nrow(temp))), ]
 warning("Data frame has two or fewer rows. Cannot remove last two rows.")
 }
 
-temp$salesdate <- seq(from = as.Date("2023-09-10"), to = as.Date("2023-09-18"), by = "day")
+temp$salesdate <- seq(from = as.Date("2023-09-17"), to = as.Date("2023-09-25"), by = "day")
 temp$weekday <- wday(temp$salesdate, label = TRUE) # Introduce a weekday instrumental variable
 temp$price <- round_to_constraint(t)
 temp$pred_vol <- round(predict(bss_hierachical_price_product_intercept, newdata = temp, re.form = NA),0)
