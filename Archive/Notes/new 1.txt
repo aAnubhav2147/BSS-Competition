@@ -1,0 +1,14 @@
+Ok. So, I am planning to scale the 'price' and 'comp_x_price' columns. Here's the basic scaling fundamental: the 'price' column will be scaled on the basis of the market threshold prices, i.e., the 'max_price' and 'min_price' respectively. Similarly, the competitor prices will be scaled basis the 'comp_data_min_price' and 'comp_data_max_price'. 
+
+So, we're basically creating a ratio for each price point  in our dataset. Here's a formula to do the scaling:
+
+(max_price - price)/min_price. For the competitor prices, the max_price and min_price will be replaced by the comp_data_max_price & comp_data_min_price respectively.
+
+Ok. Now, I want to create a function to calculate all of this. Here's a pseudocode of my approach:
+
+scaled_prices <- function(df){
+                                pat1 <- "price"
+                                pat2 <- grep("comp_[0-9]+_price")
+								f1 <- (max_price-price)/min_price
+								f2 <- (
+								if pat1{
