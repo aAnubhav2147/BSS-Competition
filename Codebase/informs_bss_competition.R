@@ -26,7 +26,7 @@ library("stargazer") # For tabulating the results
 
 setwd("C:/Users/anubh/Desktop/Anubhav Shankar/Additional Education/INFORMS/BSS-Competition/Latest Data")
 
-bss <- read_excel("competition_data_2023_18_09.xlsx")
+bss <- read_excel("competition_data_2023_18_09.xlsx") # Ingest the data
 
 
 # Create a backup of the data frame
@@ -59,6 +59,7 @@ is_na_count <- bss %>% ungroup() %>% summarize_all(~sum(is.na(.))) %>% as.data.f
 # options(tibble.print_max = Inf)
 is_na_count # Use the ~ in the above formula as funs() has been deprecated
 
+# Get a long form count of missing & non-missing rows for all numeric fields
 bss_rc_missing <- bss %>% summarise(across(where(is.numeric), ~sum(is.na(.x)))) %>% t() %>% as.data.frame()
 bss_rc_nomiss <- bss %>% summarise(across(where(is.numeric), ~sum(!is.na(.x)))) %>% t() %>% as.data.frame()
 
@@ -101,7 +102,7 @@ ggplot(total_competitors_by_product,aes(x=product_name, y=competitors)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1.2, size = 8)) # Rotate the axis labels to make them more legible
 
-
+# Get the price ranges for all products
 max_prices_by_product <- bss %>%
   dplyr::select(sku, all_of(price_cols)) %>%
   group_by(sku) %>%
@@ -168,14 +169,14 @@ bss_long <- bss %>%
                values_to = "Price_Value",
                values_drop_na = TRUE)
 
-# Plot using ggplot2
+# Plot the distribution of price field
 ggplot(bss_long, aes(x = Price_Value)) +
   geom_histogram(fill = "blue", color = "black", alpha = 0.7, bins = 10) +
   facet_wrap(~Price_Variable, scales = "free_y") + # Customize each plot basis it's respective range
   theme_minimal() +
   labs(title = "Distribution of Price Variables", x = "Price", y = "Count")
 
-# Check the distribution of the 'volume' field
+# Check the distribution of the 'volume' field on a day-to-day basis
 weekday_totals <- aggregate(bss$volume, by=list(weekday=bss$weekday), FUN=sum)
 colnames(weekday_totals)[2] <- "volume"
 ggplot(weekday_totals,aes(x=weekday, y=volume)) +
@@ -200,9 +201,9 @@ ggplot(product_totals,aes(x=product_name, y=volume)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1.2, size = 8)) # Rotate the axis labels to make them more legible
 
+# See the snapshot of Demand Curves
 
-
-bss_pivot <- bss %>% filter(salesdate >= "2022-01-01" & salesdate <= "2022-07-13") %>% dplyr::select(sku, price, volume, revenue, prod_cat) %>% distinct()
+bss_pivot <- bss %>% filter(salesdate >= "2022-01-01" & salesdate <= "2022-07-31") %>% dplyr::select(sku, price, volume, revenue, prod_cat) %>% distinct()
 
 # product_name <- c("File Folders SKU 47","File Folders SKU 20")
 product_name <- c("File Folders SKU 47")
@@ -252,7 +253,7 @@ profit_ts <- ts(recent_profit$Total_Profit, start = c(2022,1), frequency = 4)
 # Plot
 autoplot(profit_ts) + labs(y ="Profit Earned", title = "Quarterly Profits for 2022")
 
-
+# Get the Quarterly sales for 2022
 recent_sales <- bss %>%
   filter(year(salesdate) == 2022) %>%
   # Group by quarter and summarize the sales
@@ -262,6 +263,7 @@ recent_sales <- bss %>%
 sales_ts <- ts(recent_sales$Total_Sales, start = c(2022,1), frequency = 4)
 autoplot(sales_ts) + labs(y ="Volume Sold", title = "Quarterly Sales for 2022")
 
+# Get the monthly sales trend for 2022
 monthly_sales <- bss %>%
   filter(year(salesdate) == 2022) %>%
   # Group by quarter and summarize the sales
@@ -354,12 +356,12 @@ ranef(bss_hierachical_cost_product_intercept)
 plot(ranef(bss_hierachical_cost_product_intercept))
 summary(bss_hierachical_cost_product_intercept)
 
-predictions <- predict(bss_hierachical_cost_product_intercept, newdata = bss_val)
+predictions <- predict(bss_hierachical_cost_product_intercept, newdata = bss_val) # Predict the volume sold
 bss_val$pred_vol <- round(predictions,0)
 
-stargazer(bss_hierachical_cost_product_intercept, type = "text", title = "Random Effect Results", summary = TRUE)
+# stargazer(bss_hierachical_cost_product_intercept, type = "text", title = "Random Effect Results", summary = TRUE)
 
-
+# Generate a Profit function to optimize the profit for the predicted volume
 profit_function <- function(price, model, df) {
   
   predicted_volume <- predict(model, newdata = transform(df, price = price)) # Predict the volume of sales for the given price by replacing the existing prices with the optimum prices using the transform() function
@@ -411,7 +413,7 @@ warning("Data frame has two or fewer rows. Cannot remove last two rows.")
 
 temp$salesdate <- seq(from = as.Date("2023-09-17"), to = as.Date("2023-09-25"), by = "day")
 temp$weekday <- wday(temp$salesdate, label = TRUE) # Introduce a weekday instrumental variable
-temp$price <- round_to_constraint(t)
+temp$price <- t
 temp$pred_vol <- round(predict(bss_hierachical_cost_product_intercept, newdata = temp, re.form = NA),0)
 temp$pred_profit <- (temp$price * temp$pred_vol) - temp$cost
 

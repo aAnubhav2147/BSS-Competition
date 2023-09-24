@@ -496,7 +496,7 @@ plot(ranef(bss_hierachical_cost_product_intercept)) # Plots the cost vs. interce
 summary(bss_hierachical_cost_product_intercept) # Coefficients of the mixed & random effects
 
 predictions <- predict(bss_hierachical_cost_product_intercept, newdata = bss_val)
-bss_val$pred_vol <- round(predictions,0)
+bss_val$pred_vol <- round(predictions,0) # Predict the volume sold
 
 stargazer(bss_hierachical_cost_product_intercept, type = "text", title = "Random Effect Results", summary = TRUE) # Tabulate the summary of the model
 

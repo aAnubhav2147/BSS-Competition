@@ -1,28 +1,21 @@
-2023 INFORMS BSS Data Challenge
+**2023 INFORMS BSS Data Challenge**
+
 Overview
-The 2023 INFORMS Business Strategy Section (BSS) Data Challenge invites participants to dive into a rich dataset provided by Blue Summit Supplies. The challenge aims to identify optimal pricing strategies for various products to maximize revenue.
+The 2023 INFORMS Business Strategy Section (BSS) Data Challenge invites participants to dive into a rich dataset provided by Blue Summit Supplies. The challenge aims to identify optimal pricing strategies for various products to maximize the profit.
 
-Dataset
-The dataset comprises information on product sales, including features like:
+Briefly, this data challenge seeks innovative solutions to achieve two main goals:
 
-SKU
-Product category
-Competitor pricing
-Sales volume
-Cost
-And other relevant details
-This data spans multiple years and provides a comprehensive view of the sales trends and factors influencing them.
+• Determine the optimal selling price for an eCommerce product by leveraging more than two years of
+historical data comprising various sales and market variables.
 
-Objectives
-Participants are tasked with:
+• Predict the expected daily profit for that product given a determined optimal selling price.
+The developed solution should ideally lead to more profitable pricing decisions and strategies in a dynamic
+eCommerce market.
 
-Exploratory Data Analysis (EDA): Understand the underlying patterns, trends, and potential relationships within the dataset.
-Modeling: Build predictive models to forecast sales volume based on various factors including product pricing.
-Optimal Pricing Strategy: Use the model results to derive an optimal pricing strategy for the products to maximize revenue. This strategy should account for various constraints such as minimum and maximum allowable prices and competitor pricing strategies.
-Evaluation
-Submissions will be evaluated based on the efficacy of the proposed pricing strategy in maximizing revenue. This includes the accuracy of the models used, the comprehensiveness of the analysis, and the feasibility of the pricing recommendations.
+Approach: We'll utilize a Hierarchical/Mixed-Effect Model to capture the volatility and dynamic Demand Curves of each product. This will be a three-pronged approach as mentioned below:
 
-Submission
-Participants should provide a detailed report of their analysis, methodologies employed, models developed, and the final pricing strategy recommendations. The report should be clear, concise, and supported by data-driven insights.
+1.) Create a Hierarchical model to predict the volume sold.
+2.) Create a profit function to optimize the profit using the predicted volume.
+3.) Optimize the model in tandem with the profit function to get the optimal price point within the requisite constraints.
 
-Note: This README provides a brief overview of the 2023 INFORMS BSS Data Challenge. For detailed instructions, rules, and guidelines, participants should refer to the official challenge document.
+Please refer to the 'Final Report' folder or the .Rmd file in the 'Codebase' folder for a detailed breakdown and the application of the approach mentioned above.
