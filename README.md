@@ -1,6 +1,5 @@
 **2023 INFORMS BSS Data Challenge**
 
-Overview
 The 2023 INFORMS Business Strategy Section (BSS) Data Challenge invites participants to dive into a rich dataset provided by Blue Summit Supplies. The challenge aims to identify optimal pricing strategies for various products to maximize the profit.
 
 Briefly, this data challenge seeks innovative solutions to achieve two main goals:
